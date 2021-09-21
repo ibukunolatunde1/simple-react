@@ -4,7 +4,7 @@ parameters:
 
 steps:
   - task: Docker@2
-    displayImage: 'Build Image'
+    displayName: 'Build Image'
     inputs:
       repository: $(service)
       command: build
