@@ -16,6 +16,8 @@ parameters:
 variables:
 - service: account
 - template: templates/vars/vars-global.yml
+  parameters:
+    serviceName: account
 
 stages:
 - stage: 'Build'

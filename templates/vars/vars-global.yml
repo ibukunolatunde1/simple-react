@@ -1,4 +1,5 @@
 variables:
+  service: {{ parameters.serviceName }}
   vmImage: ubuntu-latest
   repository: $(service)
   chartPath: 'de-helm-charts/$(service)'
