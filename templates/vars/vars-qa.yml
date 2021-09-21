@@ -1,5 +1,5 @@
 variables:
-  environmentName: 'de-qa.de-qa'
+  environmentName: 'de-qa'
   containerRegistry: DigitalEngagementACR02
   containerRegistryURL: digitalengagementacr02.azurecr.io
   azureSubscription: 'de-devops-service-principal'
