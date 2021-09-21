@@ -41,8 +41,8 @@ stages:
     #dependsOn: 
     jobs:
     # Don't run this in Dev
-    ${{ if ne(variables['env'], 'dev') }}:
-      - template: templates/steps-waitforvalidation.yml
+    # ${{ if ne(variables['env'], 'dev') }}:
+    #   - template: templates/steps-waitforvalidation.yml
     - deployment: Deploy_to_${{ env }}
       pool:
         vmImage: ${{ variables.vmImage }}
