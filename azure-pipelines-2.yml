@@ -14,7 +14,7 @@ parameters:
   default: ['dev', 'qa', 'uat']
 
 variables:
-- service: account
+# - service: account
 - template: templates/vars/vars-global.yml
   parameters:
     serviceName: account
