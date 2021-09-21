@@ -8,13 +8,7 @@ trigger:
     - 'atomic-services/account/*'
     - 'utility/server/package.json'
 
-parameters:
-- name: environments
-  type: object
-  default: ['dev', 'qa', 'uat']
-
 variables:
-# - service: account
 - template: templates/vars/vars-global.yml
   parameters:
     serviceName: account
@@ -33,17 +27,11 @@ stages:
           image_tag: ${{ variables.image_tag }}
           service: $(service)
 
-- ${{ each env in parameters.environments }}:
-  - stage: 'Deploy_${{ env }}'
+- stage: 'Deploy_dev'
     variables:
-      - template: templates/vars/vars-${{ env }}.yml
-    # Checkout how to do DependsOn
-    #dependsOn: 
+      - template: templates/vars/vars-dev.yml
     jobs:
-    # Don't run this in Dev
-    # ${{ if ne(variables['env'], 'dev') }}:
-    #   - template: templates/steps-waitforvalidation.yml
-    - deployment: Deploy_to_${{ env }}
+    - deployment: Deploy_to_dev
       pool:
         vmImage: ${{ variables.vmImage }}
       environment: ${{ variables.environmentName }}
@@ -58,15 +46,39 @@ stages:
                 containerRegistry: ${{ variables.containerRegistry }}
                 image_tag: ${{ variables.image_tag }}
                 service: $(service)
-            - task: Powershell@2
-              inputs:
-                targetType: 'inline'
-                script: |
-                  # Write your Powershell command here
+            - template: templates/steps-helmDeploy.yml
+              parameters:
+                env: dev
+                azureSubscription: ${{ variables.azureSubscription }}
+                azureResourceGroup: ${{ variables.azureResourceGroup }}
+                kubernetesCluster: ${{ variables.kubernetesCluster }}
+                namespace: ${{ variables.namespace }}
+                chartPath: ${{ variables.servicePath}}/${{ variables.chartPath }}
+                releaseName: ${{ variables.releaseName }}
+                arguments: ${{ variables.arguments }}
 
-                  dir
-            # Don't run this in UAT
-            # ${{ if ne(variables['env'], 'uat') }}:
+- stage: 'Deploy_qa'
+    variables:
+      - template: templates/vars/vars-qa.yml
+    dependsOn: Deploy_dev
+    jobs:
+    - template: templates/steps-waitforvalidation.yml
+    - deployment: Deploy_to_qa
+      pool:
+        vmImage: ${{ variables.vmImage }}
+      environment: ${{ variables.environmentName }}
+      dependsOn: waitForValidation
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - checkout: self
+            - template: templates/steps-deploytoACR.yml
+              parameters:
+                containerRegistryURL: ${{ variables.containerRegistryURL }}
+                containerRegistry: ${{ variables.containerRegistry }}
+                image_tag: ${{ variables.image_tag }}
+                service: $(service)
             - template: templates/steps-helmDeploy.yml
               parameters:
                 env: ${{ env }}
@@ -77,3 +89,26 @@ stages:
                 chartPath: ${{ variables.servicePath}}/${{ variables.chartPath }}
                 releaseName: ${{ variables.releaseName }}
                 arguments: ${{ variables.arguments }}
+
+- stage: 'Deploy_uat'
+    variables:
+      - template: templates/vars/vars-uat.yml
+    dependsOn: Deploy_dev
+    jobs:
+    - template: templates/steps-waitforvalidation.yml
+    - deployment: Deploy_to_uat
+      pool:
+        vmImage: ${{ variables.vmImage }}
+      environment: ${{ variables.environmentName }}
+      dependsOn: waitForValidation
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - checkout: self
+            - template: templates/steps-deploytoACR.yml
+              parameters:
+                containerRegistryURL: ${{ variables.containerRegistryURL }}
+                containerRegistry: ${{ variables.containerRegistry }}
+                image_tag: ${{ variables.image_tag }}
+                service: $(service)
