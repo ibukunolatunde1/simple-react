@@ -1,0 +1,10 @@
+variables:
+  environmentName: 'de-dev.de-dev'
+  containerRegistry: DigitalEngagementACR01
+  containerRegistryURL: digitalengagementacr01.azurecr.io
+  azureSubscription: 'de-devops-service-principal'
+  azureResourceGroup: 'DE_Central_US'
+  kubernetesCluster: 'de-nonprod-aks01'
+  namespace: 'de-dev'
+  releaseName: '$(service)'
+  arguments: '--set=env=dev,image.repository=$(repository),image.tag=$(image_tag)'

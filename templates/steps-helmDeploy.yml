@@ -1,0 +1,29 @@
+parameters:
+  azureSubscription: ''
+  azureResourceGroup: ''
+  kubernetesCluster: ''
+  namespace: ''
+  chartPath: ''
+  releaseName: ''
+  arguments: ''
+  env: ''
+
+steps:
+  - task: HelmInstaller@0
+    displayName: 'Install Helm 2.14.1'
+  - task: HelmDeploy@0
+    displayName: 'helm upgrade ${{ parameters.env }}'
+    inputs:
+      azureSubscription: ${{ parameters.azureSubscription }}
+      azureResourceGroup: ${{ parameters.azureResourceGroup }}
+      kubernetesCluster: ${{ parameters.kubernetesCluster }}
+      useClusterAdmin: true
+      namespace: ${{ parameters.namespace }}
+      command: upgrade
+      chartType: FilePath
+      chartPath: ${{ parameters.chartPath }}
+      releaseName: ${{ parameters.releaseName }}
+      valueFile: 'de-helm-charts/values_nonprod.yaml'
+      waitForExecution: false
+      arguments: ${{ parameters.arguments }}
+      failOnStderr: true

@@ -1,0 +1,37 @@
+parameters:
+  containerRegistryURL: ''
+  containerRegistry: ''
+  image_tag: ''
+  service: ''
+
+
+steps:
+  - task: Docker@2
+    displayName: 'Load Image from Tar'
+    inputs:
+      command: load
+      arguments: '--input $(Pipeline.Workspace)/ContainerImage/${{ parameters.image_tag }}.image.tar'
+  - task: Docker@2
+    displayName: 'Retag Image with ACR Name - BuildID'
+    inputs:
+      containerRegistry: ${{ parameters.containerRegistry }}
+      repository: ${{ parameters.service }}
+      command: tag
+      arguments: '${{ parameters.service }}:${{ parameters.image_tag }} ${{ parameters.containerRegistryURL }}/${{ parameters.service }}:${{ parameters.image_tag }}'
+  - task: Docker@2
+    displayName: 'Retag Image with ACR Name - BuildID'
+    inputs:
+      containerRegistry: ${{ parameters.containerRegistry }}
+      repository: ${{ parameters.service }}
+      command: tag
+      arguments: '${{ parameters.service }}:${{ parameters.image_tag }} ${{ parameters.containerRegistryURL }}/${{ parameters.service }}:release'
+  - task: Docker@2
+    displayName: 'Push Image to ACR'
+    inputs:
+      containerRegistry: ${{ parameters.containerRegistry }}
+      repository: ${{ parameters.service }}
+      command: push
+      tags: |
+        ${{ parameters.image_tag }}
+        release
+  

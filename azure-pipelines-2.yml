@@ -1,0 +1,77 @@
+name: $(Build.SourceBranchName)-$(Date:yyyyMMdd)-$(Rev:r)
+trigger:
+  branches:
+    include:
+    - develop
+  paths:
+    include:
+    - 'atomic-services/account/*'
+    - 'utility/server/package.json'
+
+parameters:
+- name: environments
+  type: object
+  default: ['dev', 'qa', 'uat']
+
+variables:
+- service: account
+- template: templates/vars/vars-global.yml
+
+stages:
+- stage: 'Build'
+  displayName: 'Build the docker image'
+  jobs:
+  - job: 'account_build'
+    displayName: 'Build Job'
+    steps:
+      - template: steps-build-docker.yml
+        parameters:
+          Dockerfile: ${{ variables.servicePath }}/Dockerfile
+          buildContext: .
+          image_tag: ${{ variables.image_tag }}
+          service: $(service)
+
+- ${{ each env in parameters.environments }}:
+  - stage: 'Deploy_${{ env }}'
+    variables:
+      - template: templates/vars/vars-${{ env }}.yml
+    # Checkout how to do DependsOn
+    #dependsOn: 
+    jobs:
+    # Don't run this in Dev
+    ${{ if ne(variables['env'], 'dev') }}:
+      - template: templates/steps-waitforvalidation.yml
+    - deployment: Deploy_to_${{ env }}
+      pool:
+        vmImage: ${{ variables.vmImage }}
+      environment: ${{ variables.environmentName }}
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+            - checkout: self
+            - template: templates/steps-deploytoACR.yml
+              parameters:
+                containerRegistryURL: ${{ variables.containerRegistryURL }}
+                containerRegistry: ${{ variables.containerRegistry }}
+                image_tag: ${{ variables.image_tag }}
+                service: $(service)
+            - task: Powershell@2
+              inputs:
+                targetType: 'inline'
+                script: |
+                  # Write your Powershell command here
+
+                  dir
+            # Don't run this in UAT
+            ${{ if ne(variables['env'], 'uat') }}:
+              - template: templates/steps-helmDeploy.yml
+                parameters:
+                  env: ${{ env }}
+                  azureSubscription: ${{ variables.azureSubscription }}
+                  azureResourceGroup: ${{ variables.azureResourceGroup }}
+                  kubernetesCluster: ${{ variables.kubernetesCluster }}
+                  namespace: ${{ variables.namespace }}
+                  chartPath: ${{ variables.servicePath}}/${{ variables.chartPath }}
+                  releaseName: ${{ variables.releaseName }}
+                  arguments: ${{ variables.arguments }}

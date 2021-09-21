@@ -1,0 +1,6 @@
+variables:
+  vmImage: ubuntu-latest
+  repository: $(service)
+  chartPath: 'de-helm-charts/$(service)'
+  servicePath: 'atomic-services/$(service)'
+  image_tag: $(service)_$(Build.BuildNumber)

@@ -1,0 +1,26 @@
+parameters:
+  Dockerfile: ''
+  buildContext: ''
+
+steps:
+  - task: Docker@2
+    displayImage: 'Build Image'
+    inputs:
+      repository: $(service)
+      command: build
+      Dockerfile: ${{ parameters.Dockerfile }}
+      # Set condition that if exist in parameters add, if not remove
+      buildContext: ${{ parameters.BuildContext }}
+      tags: '$(image_tag)'
+  - task: Docker@2
+    displayName: 'Archive Image'
+    inputs:
+      repository: $(service)
+      command: save
+      arguments: '--output $(Build.ArtifactStagingDirectory)/$(image_tag).image.tar $(service):$(image_tag)'
+      addPipelineData: false
+  - task: PublishPipelineArtifact@1
+    displayName: 'Publishing Image as Pipeline Artifact'
+    inputs:
+      path: '$(Build.ArtifactStagingDirectory)'
+      artifact: 'ContainerImage'
