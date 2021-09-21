@@ -67,7 +67,7 @@ stages:
                   dir
             # Don't run this in UAT
             # ${{ if ne(variables['env'], 'uat') }}:
-            #   - template: templates/steps-helmDeploy.yml
+              - template: templates/steps-helmDeploy.yml
                 parameters:
                   env: ${{ env }}
                   azureSubscription: ${{ variables.azureSubscription }}
