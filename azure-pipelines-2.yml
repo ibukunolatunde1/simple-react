@@ -67,13 +67,13 @@ stages:
                   dir
             # Don't run this in UAT
             # ${{ if ne(variables['env'], 'uat') }}:
-              - template: templates/steps-helmDeploy.yml
-                parameters:
-                  env: ${{ env }}
-                  azureSubscription: ${{ variables.azureSubscription }}
-                  azureResourceGroup: ${{ variables.azureResourceGroup }}
-                  kubernetesCluster: ${{ variables.kubernetesCluster }}
-                  namespace: ${{ variables.namespace }}
-                  chartPath: ${{ variables.servicePath}}/${{ variables.chartPath }}
-                  releaseName: ${{ variables.releaseName }}
-                  arguments: ${{ variables.arguments }}
+            - template: templates/steps-helmDeploy.yml
+              parameters:
+                env: ${{ env }}
+                azureSubscription: ${{ variables.azureSubscription }}
+                azureResourceGroup: ${{ variables.azureResourceGroup }}
+                kubernetesCluster: ${{ variables.kubernetesCluster }}
+                namespace: ${{ variables.namespace }}
+                chartPath: ${{ variables.servicePath}}/${{ variables.chartPath }}
+                releaseName: ${{ variables.releaseName }}
+                arguments: ${{ variables.arguments }}
