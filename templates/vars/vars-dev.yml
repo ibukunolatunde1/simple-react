@@ -1,7 +1,7 @@
 variables:
   environmentName: 'de-dev'
-  containerRegistry: DigitalEngagementACR01
-  containerRegistryURL: digitalengagementacr01.azurecr.io
+  containerRegistry: testACR01
+  containerRegistryURL: testacr01.azurecr.io
   azureSubscription: 'de-devops-service-principal'
   azureResourceGroup: 'DE_Central_US'
   kubernetesCluster: 'de-nonprod-aks01'
